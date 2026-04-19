@@ -9,7 +9,7 @@ mysql image and run an instance.
 docker --version
 docker pull mysql
 docker images
-docker run --name mysql -p 3308:3306 -e MYSQL_ROOT_PASSWORD=password -d mysql::tag
+docker run --name mysql -p 3308:3306 -e MYSQL_ROOT_PASSWORD=password -d mysql:latest
 docker ps
 docker ps -a
 ```
