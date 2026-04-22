@@ -15,4 +15,5 @@ public class Product {
     @Id
     @GeneratedValue(strategy = UUID)
     private String id;
+    private String name;
 }
