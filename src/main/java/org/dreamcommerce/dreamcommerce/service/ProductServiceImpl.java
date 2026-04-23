@@ -42,6 +42,7 @@ public class ProductServiceImpl implements ProductService {
 
         //save
         Product savedProduct = productRepository.save(product);
+
         return modelMapper.map(savedProduct, UpdateProductResponse.class);
     }
 }
