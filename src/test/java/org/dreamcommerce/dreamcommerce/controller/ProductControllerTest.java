@@ -2,7 +2,6 @@ package org.dreamcommerce.dreamcommerce.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dreamcommerce.dreamcommerce.dto.request.AddProductRequest;
-import org.dreamcommerce.dreamcommerce.dto.request.UpdateProductRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
