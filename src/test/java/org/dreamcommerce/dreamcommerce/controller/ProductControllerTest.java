@@ -10,8 +10,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.mock.web.MockPart;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -62,23 +64,46 @@ public class ProductControllerTest {
     }
 
     @Test
+    @Sql(scripts = {"/db/data.sql"})
     void testUpdateProduct() {
         try {
-            String productId = "1000";
+            String productId = "a9386116-fde5-4e27-baef-e7db7f6a5bdb";
+            String name = "Candy";
+
+            mockMvc.perform(MockMvcRequestBuilders.multipart("/api/v1/product/" + productId)
+                    .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                    .part( new MockPart("name", name.getBytes())) // Form field name and a value bytes array
+            )
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Candy"))
+            .andDo(MockMvcResultHandlers.print());
+        } catch (Exception e) {
+            log.error("ERROR: {}", e.getMessage());
+            assertNull(e);
+        }
+    }
+
+    @Test
+    @Sql(scripts = {"/db/data.sql"})
+    void testUpdateImage() {
+        try {
+            String productId = "a9386116-fde5-4e27-baef-e7db7f6a5bdb";
             final String imageLocation = "C:\\Users\\USER\\Downloads\\DreamDevs\\dreamCommerce\\src\\main\\resources\\static\\test.png";
             Path path = Path.of(imageLocation);
             InputStream imageStream = Files.newInputStream(path);
 
             mockMvc.perform(MockMvcRequestBuilders.multipart("/api/v1/product/" + productId)
-                            .file("name", "Candy".getBytes()) // Form field name and a value bytes array
-                            .file("images", new MockMultipartFile("image", imageStream).getBytes())
                             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                            .part( new MockPart("name", "Candy".getBytes())) // Form field name and a value bytes array
+                            .file("images", new MockMultipartFile("image", imageStream).getBytes())
                     )
                     .andExpect(MockMvcResultMatchers.status().isOk())
-                    .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Candy"))
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.images").exists())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.images").isNotEmpty())
                     .andDo(MockMvcResultHandlers.print());
         } catch (Exception e) {
             log.error("ERROR: {}", e.getMessage());
             assertNull(e);
-        }    }
+        }
+    }
 }

@@ -38,9 +38,10 @@ public class ProductServiceImpl implements ProductService {
         }
 
         // Update the product and upload images if present
-        product = modelMapper.map(updateProductRequest, Product.class); // This overload of map() updates the product with the fields in updateProductRequest
+        modelMapper.map(updateProductRequest, product); // This overload of map() updates the product with the fields in updateProductRequest
 
         //save
-        return modelMapper.map(productRepository.save(product), UpdateProductResponse.class);
+        Product savedProduct = productRepository.save(product);
+        return modelMapper.map(savedProduct, UpdateProductResponse.class);
     }
 }

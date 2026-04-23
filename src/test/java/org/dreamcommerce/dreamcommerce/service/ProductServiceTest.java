@@ -70,6 +70,7 @@ public class ProductServiceTest {
         when(modelMapper.map(product, UpdateProductResponse.class)).thenReturn(productResponse);
         when(modelMapper.map(updateProductRequest, Product.class)).thenReturn(product);
 
+        // TODO: Fix
         UpdateProductResponse updateProductResponse = productService.updateProduct(productId, updateProductRequest);
         assertThat(updateProductResponse).isNotNull();
         assertThat(updateProductResponse.getId()).isEqualTo(productId);

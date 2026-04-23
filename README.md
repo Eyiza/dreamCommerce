@@ -12,5 +12,6 @@ docker images
 docker run --name mysql -p 3308:3306 -e MYSQL_ROOT_PASSWORD=password -d mysql:latest
 docker ps
 docker ps -a
+docker exec -it mysql mysql -u root -p # To access the db in your terminal
 ```
 
