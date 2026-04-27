@@ -15,3 +15,7 @@ docker ps -a
 docker exec -it mysql mysql -u root -p # To access the db in your terminal
 ```
 
+To test using curl
+```
+curl --json '{"username":"user","password":"password"}' http://localhost:8080/api/v1/login
+```
