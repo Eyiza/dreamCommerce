@@ -1,4 +1,4 @@
-package org.dreamcommerce.dreamcommerce.security.dto.requests;
+package org.dreamcommerce.dreamcommerce.security.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;

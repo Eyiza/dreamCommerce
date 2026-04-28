@@ -1,28 +1,22 @@
 package org.dreamcommerce.dreamcommerce.security.filter;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTCreationException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.DateUtils;
-import org.dreamcommerce.dreamcommerce.security.dto.requests.LoginRequest;
+import org.dreamcommerce.dreamcommerce.security.dto.request.LoginRequest;
+import org.dreamcommerce.dreamcommerce.security.service.JwtService;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.Instant;
-import java.util.Base64;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,46 +37,38 @@ public class DreamCommerceAuthenticationFilter extends OncePerRequestFilter {
 
     private final ObjectMapper objectMapper;
     private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (!request.getServletPath().equals("/api/v1/login") || !request.getMethod().equals(POST.name())) {
-            throw new RuntimeException("Authentication failed");
+        if (request.getServletPath().equals("/api/v1/login") && request.getMethod().equals(POST.name())) {
+            // 1. Read JSON data from request body
+            InputStream inputStream = request.getInputStream(); // json - {"username": "", "password": ""}
+            // 2. Convert json to Java object
+            LoginRequest loginRequest = objectMapper.readValue(inputStream, LoginRequest.class);
+            // 3. Send auth credentials to the Authentication Manager
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    loginRequest.getUsername(), loginRequest.getPassword());
+
+            Authentication authenticationResult = authenticationManager.authenticate(authentication);
+            String accessToken = jwtService.generateAccessToken(authenticationResult);
+
+            Map<String, String> loginResponse = buildAuthResponseWith(accessToken);
+
+            response.getOutputStream().write(objectMapper.writeValueAsBytes(loginResponse));
+            response.setContentType(APPLICATION_JSON_VALUE);
+            response.flushBuffer(); // pushes the data to the response
+
         }
-        // 1. Read JSON data from request body
-        InputStream inputStream = request.getInputStream(); // json - {"username": "", "password": ""}
-        // 2. Convert json to Java object
-        LoginRequest loginRequest = objectMapper.readValue(inputStream, LoginRequest.class);
-        // 3. Send auth credentials to the Authentication Manager
-        String username = loginRequest.getUsername();
-        String password = loginRequest.getPassword();
-        Authentication authentication = new UsernamePasswordAuthenticationToken(username, password);
-        Authentication authenticationResult = authenticationManager.authenticate(authentication);
-        String[] authorities = authenticationResult.getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .toArray(String[]::new);
+        // Calls the next filter in the chain
+        filterChain.doFilter(request, response);
+    }
 
-        Algorithm algorithm = Algorithm.HMAC256(Base64.getEncoder()
-                .encodeToString("this is our very very secure secret".getBytes()));
-        String token = JWT.create()
-                .withSubject(username)
-                .withIssuer("dreamCommerce")
-                .withClaim("username", username) // Repeat for every data you want in the token like id
-                .withExpiresAt(Instant.now().plusSeconds(86400))
-                .withArrayClaim("roles", authorities)
-                .sign(algorithm);
-
+    private static Map<String, String> buildAuthResponseWith(String token) {
         Map<String, String> loginResponse = new HashMap<>();
         loginResponse.put("access_token", token);
         loginResponse.put("token_type", "Bearer");
-
-        response.getOutputStream().write(objectMapper.writeValueAsBytes(loginResponse));
-        response.setContentType(APPLICATION_JSON_VALUE);
-        response.flushBuffer(); // pushes the data to the response
-
-        // Calls the next filter in the chain
-        filterChain.doFilter(request, response);
+        return loginResponse;
     }
 
 
