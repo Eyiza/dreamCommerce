@@ -10,5 +10,5 @@ import java.util.List;
 public class UpdateProductResponse {
     private String id;
     private String name;
-    private List<String> imageUrls;
+    private List<String> images;
 }

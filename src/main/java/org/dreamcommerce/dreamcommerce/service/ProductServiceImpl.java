@@ -5,17 +5,24 @@ import org.dreamcommerce.dreamcommerce.dto.request.AddProductRequest;
 import org.dreamcommerce.dreamcommerce.dto.request.UpdateProductRequest;
 import org.dreamcommerce.dreamcommerce.dto.response.AddProductResponse;
 import org.dreamcommerce.dreamcommerce.dto.response.UpdateProductResponse;
+import org.dreamcommerce.dreamcommerce.exception.FileUploadFailedException;
+import org.dreamcommerce.dreamcommerce.exception.ProductUpdateFailedException;
 import org.dreamcommerce.dreamcommerce.exception.ResourceNotFoundException;
 import org.dreamcommerce.dreamcommerce.model.Product;
 import org.dreamcommerce.dreamcommerce.repository.ProductRepository;
+import org.dreamcommerce.dreamcommerce.service.cloud.CloudService;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ModelMapper modelMapper;
+    private final CloudService cloudService;
 
     @Override
     public AddProductResponse addProduct(AddProductRequest productRequest) {
@@ -34,7 +41,7 @@ public class ProductServiceImpl implements ProductService {
         // Upload images if present
         boolean isUpdateRequestWithUploads = updateProductRequest.getImages() != null && !updateProductRequest.getImages().isEmpty();
         if (isUpdateRequestWithUploads) {
-            //TODO: upload images
+            updateProductRequest.getImages().forEach(image -> uploadImage(image, product));
         }
 
         // Update the product and upload images if present
@@ -44,5 +51,15 @@ public class ProductServiceImpl implements ProductService {
         Product savedProduct = productRepository.save(product);
 
         return modelMapper.map(savedProduct, UpdateProductResponse.class);
+
+    }
+
+    private void uploadImage(MultipartFile image, Product product) {
+        try {
+            String imageUrl = cloudService.uploadImage(image.getBytes());
+            product.getImages().add(imageUrl);
+        } catch (IOException e) {
+            throw new FileUploadFailedException("File upload failed");
+        }
     }
 }

@@ -8,6 +8,9 @@ import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Setter
 @Getter
@@ -16,4 +19,5 @@ public class Product {
     @GeneratedValue(strategy = UUID)
     private String id;
     private String name;
+    private List<String> images = new ArrayList<>();
 }
