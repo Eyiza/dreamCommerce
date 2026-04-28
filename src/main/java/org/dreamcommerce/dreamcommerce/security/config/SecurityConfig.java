@@ -2,6 +2,7 @@ package org.dreamcommerce.dreamcommerce.security.config;
 
 import org.dreamcommerce.dreamcommerce.security.filter.DreamCommerceAuthenticationFilter;
 import org.dreamcommerce.dreamcommerce.security.filter.DreamCommerceAuthorizationFilter;
+import org.dreamcommerce.dreamcommerce.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -36,7 +37,7 @@ public class SecurityConfig {
                                                    DreamCommerceAuthenticationFilter authenticationFilter,
                                                    DreamCommerceAuthorizationFilter authorizationFilter){
         // Allow access to endpoints that does not require security or tokens
-        final String[] authWhiteList = new String[]{"/api/v1/login"};
+        final String[] authWhiteList = new String[]{"/api/v1/login", "/api/v1/user"};
         return http
                 .addFilterAt(authenticationFilter, BasicAuthenticationFilter.class) // Replaces the basic authentication filter
                 .addFilterAfter(authorizationFilter, DreamCommerceAuthenticationFilter.class)
@@ -48,19 +49,20 @@ public class SecurityConfig {
                 .build();
     }
 
-    @Bean
-    public UserDetailsService userDetailsService() {
-        InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-        manager.createUser(new User("john@gmail.com", "john1234",
-                List.of(new SimpleGrantedAuthority("CUSTOMER"), new SimpleGrantedAuthority("ADMIN"))));
-        manager.createUser(new User("silas@gmail.com", "silas1234",
-                List.of(new SimpleGrantedAuthority("CUSTOMER"))));
-        return manager;
-    }
+    // Using in memory details
+//    @Bean
+//    public UserDetailsService userDetailsService() {
+//        InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
+//        manager.createUser(new User("john@gmail.com", "john1234",
+//                List.of(new SimpleGrantedAuthority("CUSTOMER"), new SimpleGrantedAuthority("ADMIN"))));
+//        manager.createUser(new User("silas@gmail.com", "silas1234",
+//                List.of(new SimpleGrantedAuthority("CUSTOMER"))));
+//        return manager;
+//    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // return new BCryptPasswordEncoder();
-        return NoOpPasswordEncoder.getInstance();
+         return new BCryptPasswordEncoder();
+//        return NoOpPasswordEncoder.getInstance(); // Plain-text
     }
 }
