@@ -1,8 +1,10 @@
 package org.dreamcommerce.dreamcommerce.security.config;
 
 import org.dreamcommerce.dreamcommerce.security.filter.DreamCommerceAuthenticationFilter;
+import org.dreamcommerce.dreamcommerce.security.filter.DreamCommerceAuthorizationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,6 +19,8 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 
 import java.util.List;
 
+import static org.springframework.http.HttpMethod.POST;
+
 @Configuration
 public class SecurityConfig {
 //    @Bean
@@ -29,14 +33,19 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   DreamCommerceAuthenticationFilter authenticationFilter){
-        final String[] authWhiteList = new String[]{"TEST", "CUSTOMER", "ADMIN"};
+                                                   DreamCommerceAuthenticationFilter authenticationFilter,
+                                                   DreamCommerceAuthorizationFilter authorizationFilter){
+        // Allow access to endpoints that does not require security or tokens
+        final String[] authWhiteList = new String[]{"/api/v1/login"};
         return http
                 .addFilterAt(authenticationFilter, BasicAuthenticationFilter.class) // Replaces the basic authentication filter
-                .authorizeHttpRequests((r)->r.anyRequest()
-                        .hasAnyRole(authWhiteList))
-                        .csrf(AbstractHttpConfigurer::disable)
-                        .build();
+                .addFilterAfter(authorizationFilter, DreamCommerceAuthenticationFilter.class)
+                .authorizeHttpRequests((r)->r.requestMatchers(POST, authWhiteList).permitAll())
+                .authorizeHttpRequests((r)->r.requestMatchers("/api/v1/product").hasAnyAuthority("CUSTOMER", "TEST", "VENDOR", "ADMIN"))
+                .authorizeHttpRequests((r)->r.requestMatchers("/admin", "/user/admin", "/admin/**").hasAnyAuthority("ADMIN"))
+                .authorizeHttpRequests(r->r.anyRequest().authenticated()) // Allows access to other endpoints not specified above by any person as long as they have a valid authenticated token. It must be the last authorizeHttpRequests in this list as the hierarchy matters.
+                .csrf(AbstractHttpConfigurer::disable)
+                .build();
     }
 
     @Bean
