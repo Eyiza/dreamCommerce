@@ -6,6 +6,7 @@ import org.dreamcommerce.dreamcommerce.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -45,6 +46,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((r)->r.requestMatchers("/api/v1/product").hasAnyAuthority("CUSTOMER", "TEST", "VENDOR", "ADMIN"))
                 .authorizeHttpRequests((r)->r.requestMatchers("/admin", "/user/admin", "/admin/**").hasAnyAuthority("ADMIN"))
                 .authorizeHttpRequests(r->r.anyRequest().authenticated()) // Allows access to other endpoints not specified above by any person as long as they have a valid authenticated token. It must be the last authorizeHttpRequests in this list as the hierarchy matters.
+                .cors(Customizer.withDefaults()) // CORS config
                 .csrf(AbstractHttpConfigurer::disable)
                 .build();
     }
