@@ -21,6 +21,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 
 import java.util.List;
 
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 
 @Configuration
@@ -43,7 +44,8 @@ public class SecurityConfig {
                 .addFilterAt(authenticationFilter, BasicAuthenticationFilter.class) // Replaces the basic authentication filter
                 .addFilterAfter(authorizationFilter, DreamCommerceAuthenticationFilter.class)
                 .authorizeHttpRequests((r)->r.requestMatchers(POST, authWhiteList).permitAll())
-                .authorizeHttpRequests((r)->r.requestMatchers("/api/v1/product").hasAnyAuthority("CUSTOMER", "TEST", "VENDOR", "ADMIN"))
+                .authorizeHttpRequests((r)->r.requestMatchers(GET, "/api/v1/product").hasAnyAuthority("CUSTOMER", "TEST", "VENDOR", "ADMIN"))
+                .authorizeHttpRequests((r)->r.requestMatchers(POST, "/api/v1/product", "/api/v1/product/**").hasAnyAuthority( "TEST", "VENDOR"))
                 .authorizeHttpRequests((r)->r.requestMatchers("/admin", "/user/admin", "/admin/**").hasAnyAuthority("ADMIN"))
                 .authorizeHttpRequests(r->r.anyRequest().authenticated()) // Allows access to other endpoints not specified above by any person as long as they have a valid authenticated token. It must be the last authorizeHttpRequests in this list as the hierarchy matters.
                 .cors(Customizer.withDefaults()) // CORS config

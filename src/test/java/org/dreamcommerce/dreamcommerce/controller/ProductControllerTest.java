@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @AutoConfigureMockMvc // Tells Spring to place the mockMvc in the test context.
 @ActiveProfiles(profiles = "test")
 @Slf4j // From lombok for logging
-@WithMockUser(roles = {"TEST"})
+@WithMockUser(authorities = {"TEST"})
 public class ProductControllerTest {
     @Autowired
     private MockMvc mockMvc; //
@@ -38,16 +38,6 @@ public class ProductControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    @DisplayName(
-            """
-            Given:
-            
-            When:
-            
-            Check:
-            
-            """
-    )
     void testAddProduct() {
         AddProductRequest productRequest = new AddProductRequest();
 

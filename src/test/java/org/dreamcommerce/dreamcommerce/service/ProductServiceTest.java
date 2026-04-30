@@ -68,13 +68,11 @@ public class ProductServiceTest {
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
         when(productRepository.save(product)).thenReturn(product);
         when(modelMapper.map(product, UpdateProductResponse.class)).thenReturn(productResponse);
-        when(modelMapper.map(updateProductRequest, Product.class)).thenReturn(product);
+        // when(modelMapper.map(updateProductRequest, Product.class)).thenReturn(product);
+        doNothing().when(modelMapper).map(updateProductRequest, product);
 
-        // TODO: Fix
         UpdateProductResponse updateProductResponse = productService.updateProduct(productId, updateProductRequest);
         assertThat(updateProductResponse).isNotNull();
         assertThat(updateProductResponse.getId()).isEqualTo(productId);
-
-
     }
 }

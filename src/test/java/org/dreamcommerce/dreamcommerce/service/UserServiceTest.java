@@ -10,8 +10,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -20,6 +22,8 @@ public class UserServiceTest {
     private UserRepository userRepository;
     @Mock
     private ModelMapper modelMapper;
+    @Mock
+    private PasswordEncoder passwordEncoder;
     @InjectMocks
     private UserServiceImpl userService;
 
@@ -30,6 +34,8 @@ public class UserServiceTest {
 
         when(modelMapper.map(registerUserRequest, User.class)).thenReturn(user);
         user.setId("123");
+        user.setPassword("password");
+        when(passwordEncoder.encode(anyString())).thenReturn("hashedPassword");
         when(userRepository.save(user)).thenReturn(user);
         RegisterUserResponse registerUserResponse = new RegisterUserResponse();
         registerUserResponse.setId(user.getId());
