@@ -4,6 +4,8 @@ import com.sun.security.auth.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.dreamcommerce.dreamcommerce.dto.request.AddProductRequest;
 import org.dreamcommerce.dreamcommerce.dto.request.UpdateProductRequest;
+import org.dreamcommerce.dreamcommerce.dto.response.AddProductResponse;
+import org.dreamcommerce.dreamcommerce.dto.response.DreamCommerceResponse;
 import org.dreamcommerce.dreamcommerce.service.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,7 +25,11 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<?> addProduct(@RequestBody AddProductRequest addProductRequest) {
     // public ResponseEntity<?> addProduct(@RequestBody AddProductRequest addProductRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) { // If you want to use data from the security context
-        return ResponseEntity.status(HttpStatus.CREATED).body(productService.addProduct(addProductRequest));
+        DreamCommerceResponse<AddProductResponse> response = new DreamCommerceResponse<>();
+        response.setMessage("Product added successfully");
+        response.setSuccess(true);
+        response.setData(productService.addProduct(addProductRequest));
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping(value = "/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = APPLICATION_JSON_VALUE)
