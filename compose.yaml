@@ -1,38 +1,57 @@
 services:
-  app:
-    build: .
-    container_name: dreamcommerce-app
+  broker:
+    image: apache/kafka:latest
+    container_name: broker
     ports:
-      - "8080:8080"
+      - "9092:9092"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dreamCommerce_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: password
-      CLOUDINARY_API_KEY: 118136867525629
-      CLOUDINARY_API_SECRET: t0d_iD6ixklr7MLxcKUCte5aUqE
-      CLOUDINARY_CLOUD_NAME: dtuhcdex3
-      JWT_SIGNING_KEY: "this is our very very secure secret"
-    depends_on:
-      mysql:
-        condition: service_healthy
-    restart: unless-stopped
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 3
 
-  mysql:
-    image: mysql:8.0
-    container_name: dreamcommerce-mysql
-    ports:
-      - "3308:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: dreamCommerce_db
-    volumes:
-      - mysql-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
-volumes:
-  mysql-data:
+#  app:
+#    build: .
+#    container_name: dreamcommerce-app
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dreamCommerce_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+#      SPRING_DATASOURCE_USERNAME: root
+#      SPRING_DATASOURCE_PASSWORD: password
+#      CLOUDINARY_API_KEY: 118136867525629
+#      CLOUDINARY_API_SECRET: t0d_iD6ixklr7MLxcKUCte5aUqE
+#      CLOUDINARY_CLOUD_NAME: dtuhcdex3
+#      JWT_SIGNING_KEY: "this is our very very secure secret"
+#    depends_on:
+#      mysql:
+#        condition: service_healthy
+#    restart: unless-stopped
+#
+#  mysql:
+#    image: mysql:8.0
+#    container_name: dreamcommerce-mysql
+#    ports:
+#      - "3308:3306"
+#    environment:
+#      MYSQL_ROOT_PASSWORD: password
+#      MYSQL_DATABASE: dreamCommerce_db
+#    volumes:
+#      - mysql-data:/var/lib/mysql
+#    healthcheck:
+#      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+#
+#volumes:
+#  mysql-data:
