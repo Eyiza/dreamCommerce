@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 @SpringBootTest
 @AutoConfigureMockMvc // Tells Spring to place the mockMvc in the test context.
@@ -46,7 +47,7 @@ public class ProductControllerTest {
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsBytes(productRequest))) // Convert to JSON
                     .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
-                    .andDo(MockMvcResultHandlers.print());
+                    .andDo(print());
         } catch (Exception e) {
             assertNull(e);
         }
@@ -65,7 +66,7 @@ public class ProductControllerTest {
             )
             .andExpect(MockMvcResultMatchers.status().isOk())
             .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Candy"))
-            .andDo(MockMvcResultHandlers.print());
+            .andDo(print());
         } catch (Exception e) {
             log.error("ERROR: {}", e.getMessage());
             assertNull(e);
@@ -89,7 +90,27 @@ public class ProductControllerTest {
                     .andExpect(MockMvcResultMatchers.status().isOk())
                     .andExpect(MockMvcResultMatchers.jsonPath("$.images").exists())
                     .andExpect(MockMvcResultMatchers.jsonPath("$.images").isNotEmpty())
-                    .andDo(MockMvcResultHandlers.print());
+                    .andDo(print());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertNull(e);
+        }
+    }
+
+    @Test
+    @Sql(scripts = {"/db/data.sql"})
+    void testThatExceptionIsThrownOnUpdateProductWithInvalidId(){
+        try {
+            String productId = "a9386116-fde5-4e27-baef";
+            String name = "Candy";
+
+            mockMvc.perform(MockMvcRequestBuilders.multipart("/api/v1/product/" + productId)
+                            .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                            .part( new MockPart("name", name.getBytes())) // Form field name and a value bytes array
+                    )
+                    .andExpect(MockMvcResultMatchers.status().is5xxServerError())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.errors").isNotEmpty())
+                    .andDo(print());
         } catch (Exception e) {
             log.error("ERROR: {}", e.getMessage());
             assertNull(e);
